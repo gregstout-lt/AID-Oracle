@@ -71,8 +71,8 @@ const modifier = (text) => {
   if (state.oracle.action === info.actionCount) {
     state.memory.frontMemory = state.oracle.frontMemory
   } else {
-    const outcome = main(DEFAULT_CHANCE_FOR_SUCCESS)
-    state.memory.frontMemory = outcome
+    state.oracle.frontMemory = main(DEFAULT_CHANCE_FOR_SUCCESS)
+    state.memory.frontMemory = state.oracle.frontMemory
     state.oracle.action = info.actionCount
   }
 
