@@ -1,6 +1,6 @@
 const modifier = (text) => {
   // Prevent the AI from seeing success and failure always even when doing a continue action.
-  state.memory.frontMemory = ''
+  state.memory.frontMemory = '';
 
   return { text }
 }

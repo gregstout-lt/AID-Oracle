@@ -1,4 +1,5 @@
-const tester = (state, text, history, storyCards, info) => {
+// Every script needs a modifier function
+const modifier = (text) => {
   // Change the values below to fractions of a whole number to affect the script.
 
   // Chance of success, .5 is like roll an 11 or better on a 20 sided dice.
@@ -40,8 +41,8 @@ const tester = (state, text, history, storyCards, info) => {
       ? ADJECTIVES_CRITICAL_SUCCESS
       : ADJECTIVES_CRITICAL_FAILURE)
     const message = (isSuccess ? MESSAGE_SUCCESS : MESSAGE_FAILURE) + ((who === 'You' || who === 'I') ? '' : 's') +
-            (isCritical ? ` ${adjective}` : '') +
-            (isSuccess ? '.' : '!')
+      (isCritical ? ` ${adjective}` : '') +
+      (isSuccess ? '.' : '!')
     return (isSuccess ? ' And ' : ' But ') + who + ' ' + message
   }
 
@@ -75,6 +76,8 @@ const tester = (state, text, history, storyCards, info) => {
     state.oracle.action = info.actionCount
   }
 
-  return { state, text, history, storyCards, info }
+  return { text }
 }
-module.exports = tester
+
+// Don't modify this part
+modifier(text)

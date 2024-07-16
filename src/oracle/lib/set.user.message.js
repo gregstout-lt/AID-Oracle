@@ -1,10 +1,10 @@
-const state = require("./state");
+const state = require('./state')
 
 /**
  * Sends a message to the user if messages are enabled.
  * @param {string} message The message to send.
  */
 const setUserMessage = (message) => {
-    state.message = message;
+  state.message = message
 }
-module.exports = {setUserMessage, state};
+module.exports = { setUserMessage, state }
