@@ -7,6 +7,11 @@ const modifier = (text) => {
     // ++++++++++++++++++++++++
     // ++++++++++++++++++++++++
 
+
+    // Initialize state variables
+    state.relationshipMessage = '';
+    state.command = '';
+
     // This is the default rate for a new action.
     // Do not change this function, change the values in defaultActionRate.
     // Helper functions
@@ -379,6 +384,7 @@ const modifier = (text) => {
             this.exhaustion = new Exhaustion(player.exhaustion);
             this.threat = new Threat(player.threat);
             this.disableActions = {};
+            this.charismaReputation = player.charismaReputation || {}; // Add this line
         }
 
         updateActions(actionName, isSuccess) {
@@ -415,6 +421,11 @@ const modifier = (text) => {
             return rep;
         }
 
+        getCharismaReputationWith(characterName) {
+          return this.charismaReputation[characterName] || 0;
+      }
+  
+
         getResourceThresholds() {
             return this.resources.map(r => r.thresholds.find(t => r.value <= t.threshold)).filter(e => e).map(e => e.message);
         }
@@ -440,6 +451,37 @@ const modifier = (text) => {
             }
         }
     }
+
+    const checkReputation = (playerName, targetName) => {
+      const player = getPlayerByName(playerName);
+      const reputation = player.getCharismaReputationWith(targetName);
+      const reputationMessage = `${playerName}'s charisma reputation with ${targetName} is ${reputation}`;
+      
+      // Store the reputation message in the state array
+      state.reputationMessage = reputationMessage;
+  
+      // Log the reputation message
+      console.log(reputationMessage);
+    };
+    
+    // Example usage:
+    // checkReputation("Greg", "Jessica");
+
+    const addReputationToOutput = (text) => {
+      // Check if the reputationMessage variable is present in the state array
+      if (state.reputationMessage) {
+          // Add the reputation message to the output text
+          text += `\n\n${state.reputationMessage}`;
+          
+          // Clear the reputationMessage variable after adding it to the output
+          state.reputationMessage = '';
+      }
+  
+      return text;
+    };
+
+
+
 
     class Game {
         constructor(game) {
@@ -1020,6 +1062,64 @@ const modifier = (text) => {
         // The messages for the game.
         messages: []
     };
+
+
+
+      // Define utility functions
+      function displayAttributes() {
+        const player = game.players[0]; // Directly access the single player
+        let output = `${player.name}:\n`;
+
+        // Display relationship information
+        if (player.charismaReputation) {
+            output += `Charisma Reputation:\n`;
+            for (const [character, reputation] of Object.entries(player.charismaReputation)) {
+                output += `${character}: ${reputation}\n`;
+            }
+        }
+
+        // Display skills and abilities
+        if (player.actions) {
+            output += `Skills and Abilities:\n`;
+            player.actions.forEach(action => {
+                output += `${action.name[0]}: Rate: ${action.rate}, Cooldown: ${action.coolDown.remainingTurns}\n`;
+            });
+        }
+
+        return output;
+      }
+
+      function commandCenter(text) {
+        const commandMatcher = text.match(/\n? ?(?:> You |> You say "|):(\w+?)( [\w ]+)?[".]?\n?$/i);
+        if (commandMatcher) {
+            const command = commandMatcher[1];
+            const args = commandMatcher[2] ? commandMatcher[2].trim().split(' ') : [];
+
+            switch (command.toLowerCase()) {
+                case "status":
+                    console.log('Display Status requested');
+                    state.relationshipMessage = displayAttributes();
+                    state.command = command + ' ' + args;
+                    text = '';
+                    break;
+
+                default:
+                    console.log("Not a recognized command");
+                    text = '';
+                    break;
+            }
+
+            return { text };
+        } else {
+            return { text };
+        }
+      }
+
+      const commandResult = commandCenter(text);
+      text = commandResult.text;
+
+
+
     // ++++++++++++++++++++++++
     // ++++++++++++++++++++++++
     // END EDIT SECTION
@@ -1065,15 +1165,29 @@ const modifier = (text) => {
          * @returns {boolean} The success or failure of the action check.
          */
         const determineFate = (action) => {
-            //Check if the action is disabled
-            if (Object.values(action.preventAction).includes(true) || Object.values(activePlayer).includes(true)) {
-                return false;
-            }
-            const success = Math.random() < action.rate;
-            const message = success ? `${action.name[0]} check succeeded.` : `${action.name[0]} check failed.`
-            game.messages = [message];
-            return success;
-        }
+          // Check if the action is disabled
+          if (Object.values(action.preventAction).includes(true) || Object.values(activePlayer).includes(true)) {
+              return false;
+          }
+      
+          let successRate = action.rate;
+      
+          // Adjust success rate for charisma actions
+          if (action.name.includes("charisma")) {
+              const targetMatch = text.match(/with (\w+)/);
+              if (targetMatch) {
+                  const targetName = targetMatch[1];
+                  if (activePlayer.charismaReputation[targetName]) {
+                      successRate += activePlayer.charismaReputation[targetName] * 0.01; // Increase success rate based on reputation
+                  }
+              }
+          }
+      
+          const success = Math.random() < successRate;
+          const message = success ? `${action.name[0]} check succeeded.` : `${action.name[0]} check failed.`;
+          game.messages = [message];
+          return success;
+        };
 
         const delphicBase = () => {
             // Set the default game state
@@ -1211,13 +1325,25 @@ const modifier = (text) => {
         // ++++++++++++++++++++++++++++++++++++++++
 
         const processReputation = (isActiveTurn, action, isSuccess) => {
-            if (action) {
-                if (isSuccess && game.enableReputationSystem && (Math.random() < action.memorable)) {
-                    activePlayer.actionHistory.push(new ActionHistory(action.name[0], info.actionCount));
-                    activePlayer.actionHistory = activePlayer.actionHistory.filter(ah => ah.actionCount > Math.max(0, info.actionCount - 50))
-                }
-            }
-        }
+          if (action) {
+              if (isSuccess && game.enableReputationSystem && (Math.random() < action.memorable)) {
+                  activePlayer.actionHistory.push(new ActionHistory(action.name[0], info.actionCount));
+                  activePlayer.actionHistory = activePlayer.actionHistory.filter(ah => ah.actionCount > Math.max(0, info.actionCount - 50));
+              }
+      
+              // Handle charisma actions
+              if (action.name.includes("charisma") && isSuccess) {
+                  const targetMatch = text.match(/with (\w+)/);
+                  if (targetMatch) {
+                      const targetName = targetMatch[1];
+                      if (!activePlayer.charismaReputation[targetName]) {
+                          activePlayer.charismaReputation[targetName] = 0;
+                      }
+                      activePlayer.charismaReputation[targetName] += 1; // Increase reputation
+                  }
+              }
+          }
+      }
 
         //moduleProcessingGeneral.push(processReputation);
 
