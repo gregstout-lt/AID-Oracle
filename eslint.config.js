@@ -13,5 +13,11 @@ const compat = new FlatCompat({ baseDirectory: __dirname, recommendedConfig: plu
 export default [
   { files: ['**/*.js'], languageOptions: { sourceType: 'commonjs' } },
   { languageOptions: { globals: globals.browser } },
-  ...compat.extends('standard')
+  ...compat.extends('standard'),
+  {
+    rules: {
+      semi: "error",
+      "indent": ["error", 2]
+    }
+  }
 ]
