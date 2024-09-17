@@ -2,9 +2,13 @@
 
 A game engine for AI Dungeon.
 
-[Download](https://raw.githubusercontent.com/SlumberingMage/AID-Oracle/main/distribution/output.js) Output Fix.
-[Download](https://raw.githubusercontent.com/SlumberingMage/AID-Oracle/main/distribution/oracle-lite-1.1-input.js) Light.
-[Download](https://raw.githubusercontent.com/SlumberingMage/AID-Oracle/main/distribution/oracle-3.2-input.js) Full.
+- [Download](https://raw.githubusercontent.com/SlumberingMage/AID-Oracle/main/distribution/output.js) Output Fix.
+- [Download](https://raw.githubusercontent.com/SlumberingMage/AID-Oracle/main/distribution/oracle-lite-1.1-input.js) Light.
+- [Download](https://raw.githubusercontent.com/SlumberingMage/AID-Oracle/main/distribution/oracle-3.2-input.js) Full.
+
+## Output Paragraph Fix
+
+- [Download](https://raw.githubusercontent.com/SlumberingMage/AID-Oracle/main/distribution/output-format-paragraph.js) Output Fix.
 
 Quick fix for website scripting page.
 ```js
