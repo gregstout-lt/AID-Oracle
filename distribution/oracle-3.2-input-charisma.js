@@ -1065,8 +1065,7 @@ const modifier = (text) => {
 
 
 
-      // Define utility functions
-      function displayAttributes() {
+    function displayAttributes() {
         const player = game.players[0]; // Directly access the single player
         let output = `${player.name}:\n`;
 
@@ -1086,10 +1085,12 @@ const modifier = (text) => {
             });
         }
 
-        return output;
-      }
+        console.log(output); // Log the output to the console
 
-      function commandCenter(text) {
+        return output;
+    }
+
+/*       function commandCenter(text) {
         const commandMatcher = text.match(/\n? ?(?:> You |> You say "|):(\w+?)( [\w ]+)?[".]?\n?$/i);
         if (commandMatcher) {
             const command = commandMatcher[1];
@@ -1117,7 +1118,7 @@ const modifier = (text) => {
 
       const commandResult = commandCenter(text);
       text = commandResult.text;
-
+ */
 
 
     // ++++++++++++++++++++++++
@@ -1327,23 +1328,27 @@ const modifier = (text) => {
         const processReputation = (isActiveTurn, action, isSuccess) => {
           if (action) {
               if (isSuccess && game.enableReputationSystem && (Math.random() < action.memorable)) {
-                  activePlayer.actionHistory.push(new ActionHistory(action.name[0], info.actionCount));
-                  activePlayer.actionHistory = activePlayer.actionHistory.filter(ah => ah.actionCount > Math.max(0, info.actionCount - 50));
+              activePlayer.actionHistory.push(new ActionHistory(action.name[0], info.actionCount));
+              activePlayer.actionHistory = activePlayer.actionHistory.filter(ah => ah.actionCount > Math.max(0, info.actionCount - 50));
               }
-      
+          
               // Handle charisma actions
               if (action.name.includes("charisma") && isSuccess) {
-                  const targetMatch = text.match(/with (\w+)/);
-                  if (targetMatch) {
-                      const targetName = targetMatch[1];
-                      if (!activePlayer.charismaReputation[targetName]) {
-                          activePlayer.charismaReputation[targetName] = 0;
-                      }
-                      activePlayer.charismaReputation[targetName] += 1; // Increase reputation
+              const targetMatch = text.match(/with (\w+)/);
+              if (targetMatch) {
+                  const targetName = targetMatch[1];
+                  if (!activePlayer.charismaReputation[targetName]) {
+                  activePlayer.charismaReputation[targetName] = 0;
                   }
+                  activePlayer.charismaReputation[targetName] += 1; // Increase reputation
+              }
               }
           }
-      }
+
+          if (isSuccess) {
+              console.log(`Action ${action.name[0]} was successful.`);
+          }
+          }
 
         //moduleProcessingGeneral.push(processReputation);
 
@@ -1488,7 +1493,7 @@ const modifier = (text) => {
         state.game = game;
     }
     oracle();
-    console.log("text",text);
+    displayAttributes();
     return { text }
 }
 
