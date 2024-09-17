@@ -21,9 +21,7 @@ const modifier = (text) => {
      * @param {Array} arr An array of items.
      * @returns {*} A random item from the array or null if the array is empty.
      */
-    const getRandomItem = (arr) => {
-        return arr[Math.floor(Math.random() * arr.length)] || null;
-    }
+    
 
     /**
      * Gets the next item in the array.
@@ -924,7 +922,18 @@ const modifier = (text) => {
             // The outcomes for the threat system when the player is inactive.
             // Add as many as you like but keep one in the array.
             // The system randomly selects one of the outcomes for the player inaction.
-            array: ["A strange noise can he heard.", "There is a strange smell in the air.", "Someone Approaches.", "A voice can be heard."],
+            array: [
+                    "A text message pops up.",
+                    "A strange noise is heard.",
+                    "You notice something new about the person you are with.",
+                    "Someone approaches.",
+                    "A voice is heard.",
+                    "Vera speaks in Greg's mind.",
+                    "Vera plays a prank.",
+                    "Ema brings you a note.",
+                    "You get a dirty text message.",
+                    "You get a photo sent in a text message."
+                    ],
         },
         // The event system for the player.
         // This is used to add random events to the player.
@@ -1440,7 +1449,12 @@ const modifier = (text) => {
          * @returns The random item from the active players threat array.
          */
         const suddenly = () => {
+            console.log(`Threat Enabled: ${activePlayer.threat.enabled}, Inactive: ${activePlayer.threat.inactive}, Threshold: ${activePlayer.threat.threshold}`);
             if (!activePlayer.threat.enabled && !(activePlayer.threat.inactive > activePlayer.threat.threshold)) return "";
+            
+            // Update the threat array with any new items from the default threat array
+            updateThreatArray(activePlayer, defaultPlayerYou);
+            
             return getRandomItem(activePlayer.threat.array);
         }
 
