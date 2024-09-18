@@ -7,27 +7,24 @@ const modifier = (text) => {
     // ++++++++++++++++++++++++
     // ++++++++++++++++++++++++
 
-
-    // Initialize state variables
-    state.relationshipMessage = '';
-    state.command = '';
-
     // This is the default rate for a new action.
     // Do not change this function, change the values in defaultActionRate.
     // Helper functions
 
     /**
      * Gets a random item from an array.
-     * @param {Array} arr An array of items.
-     * @returns {*} A random item from the array or null if the array is empty.
+     * @param {[]} arr An array of items.
+     * @returns A random item from the array or null if the array is empty.
      */
-    
+    const getRandomItem = (arr) => {
+        return arr[Math.floor(Math.random() * arr.length)] || null;
+    }
 
     /**
      * Gets the next item in the array.
-     * @param {Array} arr Array of items.
+     * @param {[]} arr Array of items.
      * @param {Number} currentIndex The current index.
-     * @returns {*} The next item in the array.
+     * @returns The next item in the array.
      */
     const getNextItem = (arr, currentIndex) => {
         if (!arr.length) {
@@ -41,10 +38,15 @@ const modifier = (text) => {
     /**
      * Accounts for both an upper and lower bound
      *
-     * @param {Number} number Number to check
-     * @param {Number} lowerBound Lower bound
-     * @param {Number} upperBound Upper bound
-     * @returns {Number} Adjusted number
+     * @param {Number} number number to check
+     * @param {Number} lowerBound
+     * @param {Number} upperBound
+     * @returns Adjusted number
+     *  ----------------------------------
+     * Accounts for only a lower bound
+     * @param {Number} number number to check
+     * @param {Number} lowerBound
+     * @returns Adjusted number
      */
     const checkWithinBounds = (number, lowerBound, upperBound) => {
         if (upperBound === undefined) {
@@ -59,16 +61,16 @@ const modifier = (text) => {
      * @param {Number} starting The base starting number
      * @param {Number} min The minimum value to be added.
      * @param {Number} max The maximum value to be added.
-     * @returns {Number} The starting action rate.
+     * @returns The starting action rate.
      */
     const startingActionRate = (starting, min, max) => {
-        return starting + Math.random() * (max - min) + min;
+        return starting + (Math.random() * (min - max) + max)
     }
 
     /**
      * Gets the correct is or are for the point of view.
      * @param {String} who Who is the POV for.
-     * @returns {String} The correct is or are for the POV.
+     * @returns The correct is or are for the POV.
      */
     const getCopular = (who) => {
         switch (who) {
@@ -382,7 +384,6 @@ const modifier = (text) => {
             this.exhaustion = new Exhaustion(player.exhaustion);
             this.threat = new Threat(player.threat);
             this.disableActions = {};
-            this.charismaReputation = player.charismaReputation || {}; // The reputation system for charisma actions.
         }
 
         updateActions(actionName, isSuccess) {
@@ -419,12 +420,6 @@ const modifier = (text) => {
             return rep;
         }
 
-
-        getCharismaReputationWith(characterName) {
-          return this.charismaReputation[characterName] || 0;
-      }
-  
-
         getResourceThresholds() {
             return this.resources.map(r => r.thresholds.find(t => r.value <= t.threshold)).filter(e => e).map(e => e.message);
         }
@@ -450,37 +445,6 @@ const modifier = (text) => {
             }
         }
     }
-
-    const checkReputation = (playerName, targetName) => {
-      const player = getPlayerByName(playerName);
-      const reputation = player.getCharismaReputationWith(targetName);
-      const reputationMessage = `${playerName}'s charisma reputation with ${targetName} is ${reputation}`;
-      
-      // Store the reputation message in the state array
-      state.reputationMessage = reputationMessage;
-  
-      // Log the reputation message
-      console.log(reputationMessage);
-    };
-    
-    // Example usage:
-    // checkReputation("Greg", "Jessica");
-
-    const addReputationToOutput = (text) => {
-      // Check if the reputationMessage variable is present in the state array
-      if (state.reputationMessage) {
-          // Add the reputation message to the output text
-          text += `\n\n${state.reputationMessage}`;
-          
-          // Clear the reputationMessage variable after adding it to the output
-          state.reputationMessage = '';
-      }
-  
-      return text;
-    };
-
-
-
 
     class Game {
         constructor(game) {
@@ -542,76 +506,43 @@ const modifier = (text) => {
         // Add as many as you like but keep one in the array.
         // The system randomly selects one of the endings for the action.
         successEndings: [
-          "masterful",
-          "remarkable",
-          "flawless",
-          "exceptional",
-          "impressive",
-          "extraordinary",
-          "outstanding",
-          "brilliant",
-          "superb",
-          "excellent"
-        ],
+            "masterful",
+            "remarkable",
+            "flawless",
+            "exceptional",
+            "impressive",
+            "extraordinary",
+            "outstanding",
+            "brilliant",
+            "superb",
+            "excellent"
+          ],
         // Add as many as you like but keep one in the array.
         // The system randomly selects one of the endings for the action.
         failureEndings: [
-          "clumsy",
-          "inept",
-          "futile",
-          "disastrous",
-          "embarrassing",
-          "awkward",
-          "ineffective",
-          "incompetent",
-          "unsuccessful",
-          "miserable"
-        ],
+            "clumsy",
+            "inept",
+            "futile",
+            "disastrous",
+            "embarrassing",
+            "awkward",
+            "ineffective",
+            "incompetent",
+            "unsuccessful",
+            "miserable"
+          ],
         // The start of the success message as seen by the AI.
         // The message is combined with the success ending to form the full message.
         // Example: "You try to move the rock. and You successfully, manage to be masterful."
         // Example: "Bob tries to move the rock. and Bob successfully, manage to be masterful."
-        successStart: [
-          "successfully, manages to be",
-          "triumphantly achieves a",
-          "accomplishes the task with",
-          "executes the action in a",
-          "demonstrates a",
-          "performs with",
-          "completes the task in a",
-          "shows off a",
-          "exhibits a",
-          "displays a"
-        ],
+        successStart: "successfully, manage to be",
         // The start of the failure message as seen by the AI.
         // The message is combined with the failure ending to form the full message.
         // Example: "You try to move the rock. and You failing, it ends up being clumsy."
         // Example: "Bob tries to move the rock. and Bob failing, it ends up being futile."
-        failureStart: [
-          "fails, managing to be",
-          "stumbles, resulting in a",
-          "falters, producing a",
-          "struggles, leading to a",
-          "flounders, ending up",
-          "botches the attempt, appearing",
-          "mishandles the situation, seeming",
-          "fumbles, coming across as",
-          "bungles the task, looking",
-          "messes up, appearing"
-        ],
+        failureStart: "fail, managing to be",
         // The message to display when the action is on cool down.
-        coolDownPhrase: [
-          "unable to act",
-          "needs to catch their breath",
-          "requires a moment to recover",
-          "must wait before trying again",
-          "is temporarily incapacitated",
-          "needs time to recharge",
-          "is momentarily exhausted",
-          "has to pause briefly",
-          "is not ready for another attempt",
-          "needs a short rest"
-        ],
+        coolDownPhrase: "unable to act",
         // The note for the action, that are added to author notes for special actions.
         // This is a good place to add special rules for the action.
         note: "",
@@ -894,7 +825,21 @@ const modifier = (text) => {
         // The actions the player can take.
         actions: defaultActions(),
         // The action history of the player. Used for tracking memorable actions and player reputation.
-        actionHistory: [],
+        actionHistory: [
+            { actionCount: 1, name: "default" },
+            { actionCount: 1, name: "charisma" },
+            { actionCount: 1, name: "fighting" },
+            { actionCount: 1, name: "fighting" },
+            { actionCount: 1, name: "fighting" },
+            { actionCount: 1, name: "fighting" },
+            { actionCount: 1, name: "movement" },
+            { actionCount: 1, name: "movement" },
+            { actionCount: 1, name: "movement" },
+            { actionCount: 1, name: "observe" },
+            { actionCount: 1, name: "performance" },
+            { actionCount: 1, name: "first-aid" },
+            { actionCount: 1, name: "fighting" },
+        ],
         // The exhaustion system for the player.
         exhaustion: {
             // Enable the exhaustion system.
@@ -923,17 +868,13 @@ const modifier = (text) => {
             // Add as many as you like but keep one in the array.
             // The system randomly selects one of the outcomes for the player inaction.
             array: [
-                    "A text message pops up.",
-                    "A strange noise is heard.",
-                    "You notice something new about the person you are with.",
-                    "Someone approaches.",
-                    "A voice is heard.",
-                    "Vera speaks in Greg's mind.",
-                    "Vera plays a prank.",
-                    "Ema brings you a note.",
-                    "You get a dirty text message.",
-                    "You get a photo sent in a text message."
-                    ],
+                "A text message pops up.",
+                "A strange noise is heard.",
+                "You notice something new about the person you are with.",
+                "Someone approaches.",
+                "A voice is heard.",
+                "You receive a text message with a photo."
+                ],
         },
         // The event system for the player.
         // This is used to add random events to the player.
@@ -942,35 +883,7 @@ const modifier = (text) => {
         // Use this to track changes in player.
         // Could be used to track player mood, powers or other changes that occur over time.
         // They can be cyclic or random. Cyclic events are in sequence and random events are chosen randomly.
-        eventSystem: [
-                /*            
-                {
-                // The name of the event system.
-                name: "Arousal",
-                // The events within the event system.
-                // Add as many as you like but keep one in the array.
-                // The system randomly selects one of the events for the event system if isRandom is true.
-                // Else the system goes in order from bottom to top.
-                // The chance is a fraction of a whole number.
-                // The description is the text that is displayed when the event occurs.
-                events: [
-                    { chance: 1, description: "You feel calm and collected." },
-                    { chance: .25, description: "A slight tingle of excitement runs through you." },
-                    { chance: .15, description: "Your heart races with anticipation." },
-                    { chance: .1, description: "You feel a warm flush spreading over your skin." },
-                    { chance: .05, description: "Overwhelming arousal takes over your senses." },
-                ],
-                // The chance of the event system changing events.
-                chance: 0.1,
-                // The current event within the event system.
-                current: { chance: .05, description: "Overwhelming arousal takes over your senses." },
-                // the description of the current event.
-                description: "Overwhelming arousal takes over your senses.",
-                // Indicates whether the event is random.
-                isRandom: false
-            } 
-             */
-        ],
+        eventSystem: [],
         // The resources for the player.
         resources: [
             {
@@ -1012,7 +925,7 @@ const modifier = (text) => {
 
     const defaultGame = {
         // Enable dynamically added actions.
-        dynamicActions: true, // false by deafult
+        dynamicActions: false,
         // The action rate configuration.
         actionRate: defaultActionRate,
         // Enable the reputation system.
@@ -1056,7 +969,7 @@ const modifier = (text) => {
         // Enable the event systems.
         eventSystemEnabled: true,
         // The default author's note for the game.
-        authorsNote: "Style: mysterious, erotica, seduction, taboo, sexual.",
+        authorsNote: "Style Keywords: Light, breezy, punchy, whimsical, comedic. Structure Keywords: Rapid, dynamic, action - packed, lively interactions, visual. Tone Keywords: Light, humorous, playful, fun, engaging, entertaining.",
         // The players in the game.
         players: [defaultPlayerYou],
         // Enable dynamically added players.
@@ -1072,65 +985,6 @@ const modifier = (text) => {
         // The messages for the game.
         messages: []
     };
-
-
-
-    function displayAttributes() {
-        const player = game.players[0]; // Directly access the single player
-        let output = `${player.name}:\n`;
-
-        // Display relationship information
-        if (player.charismaReputation) {
-            output += `Charisma Reputation:\n`;
-            for (const [character, reputation] of Object.entries(player.charismaReputation)) {
-                output += `${character}: ${reputation}\n`;
-            }
-        }
-
-        // Display skills and abilities
-        if (player.actions) {
-            output += `Skills and Abilities:\n`;
-            player.actions.forEach(action => {
-                output += `${action.name[0]}: Rate: ${action.rate}, Cooldown: ${action.coolDown.remainingTurns}\n`;
-            });
-        }
-
-        console.log(output); // Log the output to the console
-
-        return output;
-    }
-
-/*       function commandCenter(text) {
-        const commandMatcher = text.match(/\n? ?(?:> You |> You say "|):(\w+?)( [\w ]+)?[".]?\n?$/i);
-        if (commandMatcher) {
-            const command = commandMatcher[1];
-            const args = commandMatcher[2] ? commandMatcher[2].trim().split(' ') : [];
-
-            switch (command.toLowerCase()) {
-                case "status":
-                    console.log('Display Status requested');
-                    state.relationshipMessage = displayAttributes();
-                    state.command = command + ' ' + args;
-                    text = '';
-                    break;
-
-                default:
-                    console.log("Not a recognized command");
-                    text = '';
-                    break;
-            }
-
-            return { text };
-        } else {
-            return { text };
-        }
-      }
-
-      const commandResult = commandCenter(text);
-      text = commandResult.text;
- */
-
-
     // ++++++++++++++++++++++++
     // ++++++++++++++++++++++++
     // END EDIT SECTION
@@ -1176,26 +1030,12 @@ const modifier = (text) => {
          * @returns {boolean} The success or failure of the action check.
          */
         const determineFate = (action) => {
-          // Check if the action is disabled
+            //Check if the action is disabled
             if (Object.values(action.preventAction).includes(true) || Object.values(activePlayer).includes(true)) {
                 return false;
             }
-      
-          let successRate = action.rate;
-      
-          // Adjust success rate for charisma actions
-          if (action.name.includes("charisma")) {
-              const targetMatch = text.match(/with (\w+)/);
-              if (targetMatch) {
-                  const targetName = targetMatch[1];
-                  if (activePlayer.charismaReputation[targetName]) {
-                      successRate += activePlayer.charismaReputation[targetName] * 0.01; // Increase success rate based on reputation
-                  }
-              }
-          }
-      
-          const success = Math.random() < successRate;
-          const message = success ? `${action.name[0]} check succeeded.` : `${action.name[0]} check failed.`;
+            const success = Math.random() < action.rate;
+            const message = success ? `${action.name[0]} check succeeded.` : `${action.name[0]} check failed.`
             game.messages = [message];
             return success;
         }
@@ -1216,7 +1056,6 @@ const modifier = (text) => {
         const game = new Game(state.game);
 
         const actionMatch = text.match(/> (.*) ((?:try|tries|attempt|attempts) (?:to use (.*) to |to )|(?:say|says) ("(?:[^"]+)"))/i);
-        console.log(actionMatch);
 
         let activePlayerName = actionMatch ? actionMatch[1] : null;
         const isDoAction = actionMatch ? actionMatch[3] || (!actionMatch[4] && actionMatch) : null;
@@ -1341,22 +1180,6 @@ const modifier = (text) => {
                     activePlayer.actionHistory.push(new ActionHistory(action.name[0], info.actionCount));
                     activePlayer.actionHistory = activePlayer.actionHistory.filter(ah => ah.actionCount > Math.max(0, info.actionCount - 50))
                 }
-          
-              // Handle charisma actions
-              if (action.name.includes("charisma") && isSuccess) {
-              const targetMatch = text.match(/with (\w+)/);
-              if (targetMatch) {
-                  const targetName = targetMatch[1];
-                  if (!activePlayer.charismaReputation[targetName]) {
-                  activePlayer.charismaReputation[targetName] = 0;
-                  }
-                  activePlayer.charismaReputation[targetName] += 1; // Increase reputation
-              }
-              }
-          }
-
-          if (isSuccess) {
-              console.log(`Action ${action.name[0]} was successful.`);
             }
         }
 
@@ -1449,12 +1272,12 @@ const modifier = (text) => {
          * @returns The random item from the active players threat array.
          */
         const suddenly = () => {
-            console.log(`Threat Enabled: ${activePlayer.threat.enabled}, Inactive: ${activePlayer.threat.inactive}, Threshold: ${activePlayer.threat.threshold}`);
+            //console.log(`Threat Enabled: ${activePlayer.threat.enabled}, Inactive: ${activePlayer.threat.inactive}, Threshold: ${activePlayer.threat.threshold}`);
             if (!activePlayer.threat.enabled && !(activePlayer.threat.inactive > activePlayer.threat.threshold)) return "";
             
             // Update the threat array with any new items from the default threat array
             updateThreatArray(activePlayer, defaultPlayerYou);
-            
+
             return getRandomItem(activePlayer.threat.array);
         }
 
@@ -1508,7 +1331,6 @@ const modifier = (text) => {
         state.game = game;
     }
     oracle();
-    displayAttributes();
     return { text }
 }
 
