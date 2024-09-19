@@ -804,6 +804,126 @@ const modifier = (text) => {
         }
     ]
 
+    const keyCharacters = [
+        { "name": "Mary", "type": "RI" },
+        { "name": "Angela", "type": "RI" },
+        { "name": "Megan", "type": "RI" },
+        { "name": "Beth", "type": "RI" },
+        { "name": "Natalie", "type": "RI" },
+        { "name": "Ema", "type": "RI" },
+        { "name": "Ivy", "type": "RI" },
+        { "name": "Calista", "type": "RI" },
+        { "name": "Lynn", "type": "RI,SP" },
+        { "name": "Vera", "type": "RI" },
+        { "name": "Valerie", "type": "RI,SP" },
+        { "name": "Sasha", "type": "RI" },
+        { "name": "Greg", "type": "RI" },
+        { "name": "Jessica", "type": "RI,SP" }
+    ];
+
+
+
+    const defaultThreatArray = [
+    ["{{Player}} notice something new."],
+    ["A text message pops up from {{Character}}.", "RI"],
+    ["Someone approaches."],
+    ["{{Player}} hears a voice."],
+    ["{{Player}} receive a text message with a photo from {{Character}}.", "RI"],
+    ["Ema brings you a message from {{Character}}.", "RI"],
+    ["{{Player}} notice {{Character}} whispering to another person.", "RI"],
+    //["An object important to {{Character}} goes missing."],
+    ["{{Player}} overhear a fragment of a conversation involving {{Character}}.", "RI"],
+    ["{{Character}} seems to be avoiding eye contact with {{Player}}.", "RI"],
+    ["{{Player}} notice {{Character}} has changed their usual routine.", "RI"],
+    ["{{Player}} finds item belonging to {{Character}}.", "RI"],
+    ["{{Character}} appears to be in a noticeably different mood than usual."],
+    ["{{Player}} catch {{Character}} looking at them when they think no one's watching.", "RI"],
+    ["{{Character}} and {{Player}} share an inside joke.", "RI"],
+    ["{{Character}} asks {{Player}} for a private conversation.", "RI"],
+    ["{{Character}} 'accidentally' brushes against {{Player}} while passing by.", "RI"],
+    //["{{Player}} notices {{Character}} has a new, unexplained scratch or bruise."],
+    //["{{Character}} starts using a phrase or mannerism typically associated with another character."],
+    ["{{Player}} catches {{Character}} hastily hiding an object.", "RI"],
+    ["{{Character}} invites {{Player}} to a one-on-one activity.", "RI"],
+    ["{{Character}} invites {{Player}} to the gym.", "RI"],
+    ["{{Player}} overhears {{Character}} talking to themselves.", "RI"],
+    ["{{Character}} asks {{Player}} a probing question about their relationship with another.", "RI"],
+    ["{{Player}} notices {{Character}} reacting nervously.", "RI"],
+    ["{{Character}} slips {{Player}} a note.", "RI"],
+    ["{{Player}} observes {{Character}} showing an unusual interest in a specific area of the setting.", "RI"],
+    ["{{Character}} slips {{Player}} a note.", "SP"],
+    ]
+
+
+    
+function getNextThreat() {
+    // Log the defaultPlayerYou object to debug the issue
+    //console.log("defaultPlayerYou:", defaultPlayerYou);
+
+    // Select a random threat from the defaultThreatArray
+    const randomThreatIndex = Math.floor(Math.random() * defaultThreatArray.length);
+    let threat = defaultThreatArray[randomThreatIndex][0];
+    const threatType = defaultThreatArray[randomThreatIndex][1];
+
+    // Replace {{Player}} token with the player's name if present
+    if (threat.includes("{{Player}}")) {
+        if (!defaultPlayerYou || !defaultPlayerYou.name) {
+            throw new Error("defaultPlayerYou or defaultPlayerYou.name is undefined");
+        }
+        threat = threat.replace("{{Player}}", defaultPlayerYou.name);
+    }
+
+    // Replace {{Character}} token with a random character of the specified type if present
+    if (threat.includes("{{Character}}")) {
+        const filteredCharacters = keyCharacters.filter(character => {
+            const characterTypes = character.type.split(',');
+            return characterTypes.includes(threatType);
+        });
+        const randomCharacterIndex = Math.floor(Math.random() * filteredCharacters.length);
+        const randomCharacter = filteredCharacters[randomCharacterIndex].name;
+        threat = threat.replace("{{Character}}", randomCharacter);
+    }
+
+    return threat;
+}
+    
+    // Example usage
+    //console.log(getNextThreat());
+
+    /*     function getRandomKeyCharacter() {
+        const randomIndex = Math.floor(Math.random() * keyCharacters.length);
+        return keyCharacters[randomIndex];
+    } */
+
+/*     // Function to update the threat system dynamically
+    function updateThreatSystem(newThreatArray) {
+        defaultThreatSystem.array = newThreatArray;
+    } */
+
+
+    // Example usage
+/*     updateThreatSystem([
+        "A new threat message.",
+        "Another threat message."
+    ]); */
+
+    const defaultThreatSystem = {
+        // Enable the threat system.
+        enabled: true,
+        // The threshold for the threat system.
+        threshold: 10,
+        // The number of active turns.
+        active: 0,
+        // The number of inactive turns.
+        inactive: 11,
+    };
+
+
+
+
+
+
+
     // DO NOT CHANGE THIS FUNCTION!
     const defaultActions = () => {
         return [
@@ -813,115 +933,78 @@ const modifier = (text) => {
         ];
     }
 
-    const defaultPlayerYou = {
-        // The name of the player.
-        name: "Greg",
-        // The status of the player.
-        status: "",
-        // The size of the Action history.
-        // The more actions the player can take the larger this number should be, or the longer the history.
-        // A long history is best used with lots of actions or high thresholds for memorable actions.
-        actionHistorySize: 10,
-        // The actions the player can take.
-        actions: defaultActions(),
-        // The action history of the player. Used for tracking memorable actions and player reputation.
-        actionHistory: [
-            { actionCount: 1, name: "default" },
-            { actionCount: 1, name: "charisma" },
-            { actionCount: 1, name: "fighting" },
-            { actionCount: 1, name: "fighting" },
-            { actionCount: 1, name: "fighting" },
-            { actionCount: 1, name: "fighting" },
-            { actionCount: 1, name: "movement" },
-            { actionCount: 1, name: "movement" },
-            { actionCount: 1, name: "movement" },
-            { actionCount: 1, name: "observe" },
-            { actionCount: 1, name: "performance" },
-            { actionCount: 1, name: "first-aid" },
-            { actionCount: 1, name: "fighting" },
-        ],
-        // The exhaustion system for the player.
-        exhaustion: {
-            // Enable the exhaustion system.
-            enabled: true,
-            // The threshold for the exhaustion system.
-            // This is the number of actions before the system activates.
-            threshold: 10,
-            // The number of inactive turns.
-            inactive: 0,
-            // The number of active turns.
-            active: 0,
-            // The message to display when the player is exhausted. This is added to the player status.
-            message: "exhausted"
+
+const defaultPlayerYou = {
+    // The name of the player.
+    name: "Greg",
+    // The status of the player.
+    status: "",
+    // The size of the Action history.
+    // The more actions the player can take the larger this number should be, or the longer the history.
+    // A long history is best used with lots of actions or high thresholds for memorable actions.
+    actionHistorySize: 10,
+    // The actions the player can take.
+    actions: defaultActions(),
+    // The action history of the player. Used for tracking memorable actions and player reputation.
+    actionHistory: [
+        { actionCount: 1, name: "default" },
+    ],
+    // The exhaustion system for the player.
+    exhaustion: {
+        // Enable the exhaustion system.
+        enabled: true,
+        // The threshold for the exhaustion system.
+        // This is the number of actions before the system activates.
+        threshold: 10,
+        // The number of inactive turns.
+        inactive: 0,
+        // The number of active turns.
+        active: 0,
+        // The message to display when the player is exhausted. This is added to the player status.
+        message: "exhausted"
+    },
+    // Use this to track changes in player.
+    // Could be used to track player mood, powers or other changes that occur over time.
+    // They can be cyclic or random. Cyclic events are in sequence and random events are chosen randomly.
+    eventSystem: [],
+    // The resources for the player.
+    resources: [
+        {
+            // The type of resource.
+            type: "health",
+            // Is the resource increasing or decreasing naturally over time?
+            isIncreased: false,
+            // The current value of the resource.
+            value: 10,
+            // The maximum value of the resource.
+            max: 10,
+            // The minimum value of the resource.
+            min: 0,
+            // The rate of change for the resource.
+            rate: 1,
+            // Is the resource critical?
+            isCritical: true,
+            // Is the resource consumable?
+            isConsumable: false,
+            // Is the resource renewable?
+            isRenewable: true,
+            // The thresholds for the resource.
+            // Thresholds are used to track the state of the resource.
+            // For example, health might have thresholds for critical, injured, and good health.
+            // The thresholds are used to track the state of the resource.
+            // The message is displayed when the resource reaches the threshold and is added to the player status.
+            // The thresholds are checked in order from top to bottom.
+            // The threshold number should be between the min and max values of the resource.
+            thresholds: [
+                { threshold: 0, message: "dead" },
+                { threshold: 3, message: "critically injured" },
+                { threshold: 5, message: "injured" },
+                { threshold: 7, message: "slightly injured" },
+                { threshold: Infinity, message: "in good health" },
+            ],
         },
-        // The threat system for the player.
-        threat: {
-            // Enable the threat system.
-            enabled: true,
-            // The threshold for the threat system.
-            threshold: 10,
-            // The number of active turns.
-            active: 0,
-            // The number of inactive turns.
-            inactive: 11,
-            // The outcomes for the threat system when the player is inactive.
-            // Add as many as you like but keep one in the array.
-            // The system randomly selects one of the outcomes for the player inaction.
-            array: [
-                "A text message pops up.",
-                "A strange noise is heard.",
-                "You notice something new about the person you are with.",
-                "Someone approaches.",
-                "A voice is heard.",
-                "You receive a text message with a photo."
-                ],
-        },
-        // The event system for the player.
-        // This is used to add random events to the player.
-        // They can be used to add flavor to the game and are for things that change randomly.
-        // They can be customized the same as game level event systems.
-        // Use this to track changes in player.
-        // Could be used to track player mood, powers or other changes that occur over time.
-        // They can be cyclic or random. Cyclic events are in sequence and random events are chosen randomly.
-        eventSystem: [],
-        // The resources for the player.
-        resources: [
-            {
-                // The type of resource.
-                type: "health",
-                // Is the resource increasing or decreasing naturally over time?
-                isIncreased: false,
-                // The current value of the resource.
-                value: 10,
-                // The maximum value of the resource.
-                max: 10,
-                // The minimum value of the resource.
-                min: 0,
-                // The rate of change for the resource.
-                rate: 1,
-                // Is the resource critical?
-                isCritical: true,
-                // Is the resource consumable?
-                isConsumable: false,
-                // Is the resource renewable?
-                isRenewable: true,
-                // The thresholds for the resource.
-                // Thresholds are used to track the state of the resource.
-                // For example, health might have thresholds for critical, injured, and good health.
-                // The thresholds are used to track the state of the resource.
-                // The message is displayed when the resource reaches the threshold and is added to the player status.
-                // The thresholds are checked in order from top to bottom.
-                // The threshold number should be between the min and max values of the resource.
-                thresholds: [
-                    { threshold: 0, message: "dead" },
-                    { threshold: 3, message: "critically injured" },
-                    { threshold: 5, message: "injured" },
-                    { threshold: 7, message: "slightly injured" },
-                    { threshold: Infinity, message: "in good health" },
-                ],
-            },
-        ],
-    };
+    ],
+};
 
     const defaultGame = {
         // Enable dynamically added actions.
@@ -1272,13 +1355,19 @@ const modifier = (text) => {
          * @returns The random item from the active players threat array.
          */
         const suddenly = () => {
-            //console.log(`Threat Enabled: ${activePlayer.threat.enabled}, Inactive: ${activePlayer.threat.inactive}, Threshold: ${activePlayer.threat.threshold}`);
-            if (!activePlayer.threat.enabled && !(activePlayer.threat.inactive > activePlayer.threat.threshold)) return "";
-            
-            // Update the threat array with any new items from the default threat array
-            updateThreatArray(activePlayer, defaultPlayerYou);
+            // Retrieve values from defaultThreatSystem
+            const { enabled, inactive, threshold, array } = defaultThreatSystem;
 
-            return getRandomItem(activePlayer.threat.array);
+            // Check if the threat is enabled and if the inactive count is below the threshold
+            if (!enabled && !(inactive > threshold)) {
+                console.log("Output of suddenly function:", ""); // Log when returning an empty string
+                return "";
+            }
+
+            // Use getNextThreat to get a new threat
+            const threat = getNextThreat();
+            console.log("Output of suddenly function:", threat); // Log the threat
+            return threat;
         }
 
         /**
