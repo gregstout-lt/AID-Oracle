@@ -856,36 +856,7 @@ const modifier = (text) => {
 
 
     
-function getNextThreat() {
-    // Log the defaultPlayerYou object to debug the issue
-    //console.log("defaultPlayerYou:", defaultPlayerYou);
 
-    // Select a random threat from the defaultThreatArray
-    const randomThreatIndex = Math.floor(Math.random() * defaultThreatArray.length);
-    let threat = defaultThreatArray[randomThreatIndex][0];
-    const threatType = defaultThreatArray[randomThreatIndex][1];
-
-    // Replace {{Player}} token with the player's name if present
-    if (threat.includes("{{Player}}")) {
-        if (!defaultPlayerYou || !defaultPlayerYou.name) {
-            throw new Error("defaultPlayerYou or defaultPlayerYou.name is undefined");
-        }
-        threat = threat.replace("{{Player}}", defaultPlayerYou.name);
-    }
-
-    // Replace {{Character}} token with a random character of the specified type if present
-    if (threat.includes("{{Character}}")) {
-        const filteredCharacters = keyCharacters.filter(character => {
-            const characterTypes = character.type.split(',');
-            return characterTypes.includes(threatType);
-        });
-        const randomCharacterIndex = Math.floor(Math.random() * filteredCharacters.length);
-        const randomCharacter = filteredCharacters[randomCharacterIndex].name;
-        threat = threat.replace("{{Character}}", randomCharacter);
-    }
-
-    return threat;
-}
     
     // Example usage
     //console.log(getNextThreat());
@@ -907,7 +878,7 @@ function getNextThreat() {
         "Another threat message."
     ]); */
 
-    const defaultThreatSystem = {
+/*     const defaultThreatSystem = {
         // Enable the threat system.
         enabled: true,
         // The threshold for the threat system.
@@ -917,7 +888,7 @@ function getNextThreat() {
         // The number of inactive turns.
         inactive: 11,
     };
-
+ */
 
 
 
@@ -963,9 +934,24 @@ const defaultPlayerYou = {
         // The message to display when the player is exhausted. This is added to the player status.
         message: "exhausted"
     },
-    // Use this to track changes in player.
-    // Could be used to track player mood, powers or other changes that occur over time.
-    // They can be cyclic or random. Cyclic events are in sequence and random events are chosen randomly.
+        // The threat system for the player.
+        threat: {
+            // Enable the threat system.
+            enabled: true,
+            // The threshold for the threat system.
+            threshold: 10,
+            // The number of active turns.
+            active: 0,
+            // The number of inactive turns.
+            inactive: 11,
+        },
+        // The event system for the player.
+        // This is used to add random events to the player.
+        // They can be used to add flavor to the game and are for things that change randomly.
+        // They can be customized the same as game level event systems.
+        // Use this to track changes in player.
+        // Could be used to track player mood, powers or other changes that occur over time.
+        // They can be cyclic or random. Cyclic events are in sequence and random events are chosen randomly.
     eventSystem: [],
     // The resources for the player.
     resources: [
@@ -1105,6 +1091,38 @@ const defaultPlayerYou = {
                 return action;
             }
             return activePlayer.actions.find(a => a.name.includes(name.toLowerCase())) || activePlayer.actions[0];
+        }
+
+
+        function getNextThreat() {
+            // Log the defaultPlayerYou object to debug the issue
+            //console.log("defaultPlayerYou:", defaultPlayerYou);
+        
+            // Select a random threat from the defaultThreatArray
+            const randomThreatIndex = Math.floor(Math.random() * defaultThreatArray.length);
+            let threat = defaultThreatArray[randomThreatIndex][0];
+            const threatType = defaultThreatArray[randomThreatIndex][1];
+        
+            // Replace {{Player}} token with the player's name if present
+            if (threat.includes("{{Player}}")) {
+                if (!activePlayer || !activePlayer.name) {
+                    throw new Error("defaultPlayerYou or defaultPlayerYou.name is undefined");
+                }
+                threat = threat.replace("{{Player}}", activePlayer.name);
+            }
+        
+            // Replace {{Character}} token with a random character of the specified type if present
+            if (threat.includes("{{Character}}")) {
+                const filteredCharacters = keyCharacters.filter(character => {
+                    const characterTypes = character.type.split(',');
+                    return characterTypes.includes(threatType);
+                });
+                const randomCharacterIndex = Math.floor(Math.random() * filteredCharacters.length);
+                const randomCharacter = filteredCharacters[randomCharacterIndex].name;
+                threat = threat.replace("{{Character}}", randomCharacter);
+            }
+        
+            return threat;
         }
 
         /**
@@ -1356,10 +1374,10 @@ const defaultPlayerYou = {
          */
         const suddenly = () => {
             // Retrieve values from defaultThreatSystem
-            const { enabled, inactive, threshold, array } = defaultThreatSystem;
+     //       const { enabled, inactive, threshold, array } = defaultThreatSystem;
 
             // Check if the threat is enabled and if the inactive count is below the threshold
-            if (!enabled && !(inactive > threshold)) {
+            if (!activePlayer.threat.enabled && !(activePlayer.threat.inactive > activePlayer.threat.threshold)) {
                 console.log("Output of suddenly function:", ""); // Log when returning an empty string
                 return "";
             }
@@ -1369,6 +1387,12 @@ const defaultPlayerYou = {
             console.log("Output of suddenly function:", threat); // Log the threat
             return threat;
         }
+
+
+
+
+
+
 
         /**
          * Gets the players status.
