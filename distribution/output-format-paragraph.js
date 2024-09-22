@@ -41,7 +41,7 @@ const modifier = (text) => {
             console.log(`result: "${result}"`);
         return result;
     }
-    return { text: formatOutput(text) }
+    return { text: formatOutput(text, history) }
 }
 // Don't modify this part
 modifier(text)
